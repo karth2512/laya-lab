@@ -97,9 +97,7 @@ def pooled_predictions(
     return np.concatenate(ys), np.concatenate(ps)
 
 
-def results_table(
-    final: pd.DataFrame, fetch: FetchPredictions, n_boot: int = 1000
-) -> pd.DataFrame:
+def results_table(final: pd.DataFrame, fetch: FetchPredictions, n_boot: int = 1000) -> pd.DataFrame:
     rows = []
     for (method, fraction), g in final.groupby(["method", "fraction"], sort=True):
         row = {
@@ -242,7 +240,11 @@ def plot_learning_curves(final: pd.DataFrame, path: Path) -> None:
                 ax.axhline(stats["mean"].iloc[0], linestyle="--", linewidth=1, label=method)
             else:
                 ax.errorbar(
-                    stats.index, stats["mean"], yerr=stats["std"], marker="o", capsize=3,
+                    stats.index,
+                    stats["mean"],
+                    yerr=stats["std"],
+                    marker="o",
+                    capsize=3,
                     label=method,
                 )
     ax.set_xscale("log")
@@ -298,9 +300,7 @@ def markdown_table(df: pd.DataFrame, index: bool = False) -> str:
     frame = df.reset_index() if index else df
     header = "| " + " | ".join(str(c) for c in frame.columns) + " |"
     sep = "|" + "---|" * len(frame.columns)
-    body = [
-        "| " + " | ".join(_fmt(v) for v in row) + " |" for row in frame.itertuples(index=False)
-    ]
+    body = ["| " + " | ".join(_fmt(v) for v in row) + " |" for row in frame.itertuples(index=False)]
     return "\n".join([header, sep, *body]) + "\n"
 
 

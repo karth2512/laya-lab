@@ -30,7 +30,9 @@ from scripts.aggregate import (  # noqa: E402
 CATCH_ALL = "General pathological conditions"
 
 
-def confusion_pairs(y: np.ndarray, pred: np.ndarray, classes: list[str], top: int = 10) -> pd.DataFrame:
+def confusion_pairs(
+    y: np.ndarray, pred: np.ndarray, classes: list[str], top: int = 10
+) -> pd.DataFrame:
     """Most frequent (true, predicted) error pairs."""
     wrong = y != pred
     pairs = pd.DataFrame({"true": y[wrong], "pred": pred[wrong]}).value_counts().head(top)
@@ -155,7 +157,11 @@ def main(argv: list[str] | None = None) -> None:
 
     fetch = mlflow_fetcher(Path("data/cache/artifacts"))
     path = build_error_report(
-        load_runs(args.experiment), fetch, args.out, load_texts(args.raw_dir), args.seed,
+        load_runs(args.experiment),
+        fetch,
+        args.out,
+        load_texts(args.raw_dir),
+        args.seed,
         args.per_class,
     )
     print(f"wrote {path}")
