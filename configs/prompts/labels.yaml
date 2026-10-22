@@ -1,0 +1,35 @@
+# Label-wording variants shared by a1 (Laya zero-shot) and a5 (Jev API).
+# Each variant lists the 5 option strings in class-id order plus the question text.
+variants:
+  plain:
+    question: "Which category does this medical abstract belong to?"
+    options:
+      - Neoplasms
+      - Digestive system diseases
+      - Nervous system diseases
+      - Cardiovascular diseases
+      - General pathological conditions
+  descriptive:
+    question: "Classify the medical abstract by the disease area it mainly studies."
+    options:
+      - "Neoplasms (cancer, tumors)"
+      - "Digestive system diseases (gastrointestinal, liver, pancreas)"
+      - "Nervous system diseases (brain, nerves, neurological)"
+      - "Cardiovascular diseases (heart, blood vessels)"
+      - "General pathological conditions (other or general conditions)"
+  short:
+    question: "Topic of this abstract?"
+    options:
+      - Cancer
+      - Digestive
+      - Neurological
+      - Cardiovascular
+      - General
+  clinical:
+    question: "Which medical specialty would this abstract be filed under?"
+    options:
+      - Oncology
+      - Gastroenterology
+      - Neurology
+      - Cardiology
+      - General pathology

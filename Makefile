@@ -17,7 +17,7 @@ EXPERIMENT ?= laya-medabs-bench
 MLFLOW_TRACKING_URI ?= sqlite:///mlflow.db
 export MLFLOW_TRACKING_URI
 
-.PHONY: help setup lock lint format typecheck test check data run sweep aggregate mlflow-ui spike clean
+.PHONY: help setup lock lint format typecheck test check data run tune sweep aggregate mlflow-ui spike clean
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
@@ -51,6 +51,10 @@ data: ## Download, audit, write split manifest
 run: ## One run: make run ARM=a4_laya_lora STAGE=dev SEED=0 FRACTION=0.1 SET="lora.r=16"
 	$(MPS_ENV) $(RUN) python -m scripts.run --arm $(ARM) --stage $(STAGE) --seed $(SEED) \
 		--fraction $(FRACTION) $(if $(SET),--set $(SET))
+
+tune: ## HP tuning on val at fraction 1.0 (6 trials): make tune ARM=a4_laya_lora
+	@pmset -g batt | grep -q "AC Power" || { echo "plug in to AC power first (multi-hour MPS runs)"; exit 1; }
+	$(MPS_ENV) caffeinate -dims $(RUN) python -m scripts.tune --arm $(ARM) $(if $(SET),--set $(SET))
 
 sweep: ## Grid of runs under caffeinate (AC power required): make sweep ARM=a4_laya_lora STAGE=final
 	@pmset -g batt | grep -q "AC Power" || { echo "plug in to AC power first (multi-hour MPS runs)"; exit 1; }

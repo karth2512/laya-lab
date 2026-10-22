@@ -1,0 +1,14 @@
+# a5: Jev via the typesafe API, zero-shot. Wording selected on val, test run once.
+uses_fractions: false   # zero-shot: sweeps run it at fraction 1.0 only
+model: jev-1.13.0               # pinned; moving aliases are refused at stage=final
+api_key_env: TYPESAFE_API_KEY   # name of the env var holding the key (never the key itself)
+url: https://api.typesafe.ai/v1/systemone
+prompts_path: configs/prompts/labels.yaml
+variants: null                  # null = every variant in prompts_path
+cache_file: data/cache/jev_cache.jsonl
+timeout_s: 30                   # per request
+run_timeout_s: 7200             # whole run
+max_retries: 5
+backoff_s: 1.0                  # doubles per retry
+rate_limit_rps: 20              # below the 80 req/s account limit
+usd_per_m_input_tokens: 0.042

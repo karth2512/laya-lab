@@ -1,0 +1,10 @@
+# TF-IDF + logistic regression. Trials are tried in order on val (equal 6-trial budget).
+max_iter: 2000
+sublinear_tf: true
+trials:
+  - {ngram_max: 1, min_df: 1, C: 1.0}
+  - {ngram_max: 1, min_df: 2, C: 10.0}
+  - {ngram_max: 2, min_df: 1, C: 1.0}
+  - {ngram_max: 2, min_df: 2, C: 10.0}
+  - {ngram_max: 2, min_df: 2, C: 3.0}
+  - {ngram_max: 2, min_df: 3, C: 30.0}

@@ -1,0 +1,24 @@
+# a3: Laya full fine-tune. Memory levers per REQUIREMENTS §8.2; M0 measured a go with these.
+backbone:
+  tiny_random: false
+  classifier_pooling: mean     # or cls
+  classifier_dropout: 0.0
+train:
+  lr: 2.0e-5
+  weight_decay: 0.01
+  epochs: 3
+  min_steps: 200               # step floor at small fractions
+  effective_batch_size: 16     # reached by gradient accumulation
+  max_tokens_per_batch: 2048   # token-budget micro-batches, padded to a multiple of 64
+  eval_max_tokens_per_batch: 8192
+  warmup_ratio: 0.06
+  optimizer: adamw             # adafactor saves ~3 GB but is ~30% slower
+  max_grad_norm: 1.0
+  patience: 2                  # early stopping on val macro-F1
+  gradient_checkpointing: true
+  bf16: true                   # bf16 autocast on MPS; fp32 weights and optimizer state
+hp_trials: 6                   # equal tuning budget per trained arm, on val at fraction 1.0
+hp_space:
+  train.lr: [1.0e-5, 2.0e-5, 3.0e-5, 5.0e-5]
+  train.weight_decay: [0.0, 0.01]
+  train.warmup_ratio: [0.0, 0.06, 0.1]

@@ -1,0 +1,2 @@
+# a0_majority has no hyperparameters.
+uses_fractions: false   # sweeps run it at fraction 1.0 only

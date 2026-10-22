@@ -13,6 +13,9 @@ dependencies = [
     "huggingface-hub>=0.30",
     "psutil>=6.0",
     "pyarrow>=25.0.1",
+    "mlflow>=3.0",
+    "matplotlib>=3.9",
+    "scipy>=1.13",
 ]
 
 [project.optional-dependencies]
@@ -42,6 +45,7 @@ package = false
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+extend-exclude = ["*.md", "spikes"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
