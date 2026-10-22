@@ -60,7 +60,7 @@ Waves 4–6 need the M5 Mac (MPS, AC power) and, for a5, a Jev API key.
 | **E. Jev API** | [x] E1 `shared/cache.py` · [x] E2 `arms/a5_jev_api` (pinned `jev-1.13.0`, httpx, retries/backoff, rate limit, timeouts, `TYPESAFE_API_KEY`, wording select on val, e2e latency tag, cost estimate) · [x] E3 `tests/test_jev.py` (mocked HTTP, cache hit/miss, retry, key never logged) |
 | **F. Laya zero-shot** | [x] F1 `arms/a1_laya_zeroshot` (`laya.load` pinned revision, typed choice, wording sweep on val, spread + option-order check) · [x] F2 conformance via stubbed `laya` |
 | **G. Laya trained** | [~] G1 `shared/laya_backbone.py` · [~] G2 `shared/train_loop.py` · [~] G3 `arms/a2_laya_frozen_head` · [~] G4 `arms/a3_laya_full_ft` (ckpt on, `--save-model` opt-in) · [~] G5 `arms/a4_laya_lora` (r∈{4,8,16,32}, `Wqkv/Wo/Wi`, adapter saved) · [~] G6 tiny-random-ModernBERT CPU test |
-| **H. Reporting** | [~] H1 `scripts/aggregate.py` (mean ± std, bootstrap CI, learning curves with a1/a5 lines, McNemar matrix, calibration plots, cost table → `reports/results.md`, `reports/figures/`) · [~] H2 `scripts/error_analysis.py` · [~] H3 tests on synthetic MLflow runs |
+| **H. Reporting** | [x] H1 `scripts/aggregate.py` (mean ± std, bootstrap CI, learning curves with a1/a5 lines, McNemar matrix, calibration plots, cost table → `reports/results.md`, `reports/figures/`) · [x] H2 `scripts/error_analysis.py` · [x] H3 tests on synthetic MLflow runs |
 
 Every arm folder: `arm.py` (`build(cfg) -> Arm`), `config.yaml`, `README.md`.
 
@@ -116,3 +116,4 @@ Cross-stream conventions:
 - Stream B done: metrics (log loss clipped), ECE/Brier/temperature scaling, bootstrap CI, McNemar (exact below 25 discordant); 8 tests pass.
 - Stream F done: a1_laya_zeroshot (pinned revision, wording sweep, spread, reversed-order check); 3 tests pass; real CPU smoke on 5 abstracts worked. Laya returns probabilities only (no logits), so a1 calibration is raw.
 - Stream A done: data, splits, prepare_data, audit; 6 tests pass. Truncation 1.55/1.56/1.90% (pool/val/test). Corpus has cross-split exact duplicates and multi-label repeats (kept: official split used as-is). Laya tokenizer loads with `subfolder="tokenizer"`.
+- Stream H done: aggregate (results table, curves, McNemar, calibration, cost, wording spread) and error_analysis; 5 tests pass. Added `load_runs`/`download_artifact` to `mlflow_utils`. Fixed wording-metric name to match a1/a5 (`wording/<v>/val_macro_f1`). Runner must write `predictions_*.csv` as `id,true_label,pred_label,prob_<class>…`.

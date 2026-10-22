@@ -147,7 +147,10 @@ def _optimizer(params: list[torch.nn.Parameter], tc: TrainConfig) -> torch.optim
         from transformers.optimization import Adafactor
 
         return Adafactor(
-            params, lr=tc.lr, weight_decay=tc.weight_decay, scale_parameter=False,
+            params,
+            lr=tc.lr,
+            weight_decay=tc.weight_decay,
+            scale_parameter=False,
             relative_step=False,
         )
     return torch.optim.AdamW(params, lr=tc.lr, weight_decay=tc.weight_decay)
@@ -173,9 +176,11 @@ def fit(
     warmup = int(tc.warmup_ratio * total_steps)
     sched = torch.optim.lr_scheduler.LambdaLR(
         opt,
-        lambda s: (s + 1) / max(warmup, 1)
-        if s < warmup
-        else max(0.0, (total_steps - s) / max(total_steps - warmup, 1)),
+        lambda s: (
+            (s + 1) / max(warmup, 1)
+            if s < warmup
+            else max(0.0, (total_steps - s) / max(total_steps - warmup, 1))
+        ),
     )
 
     best_f1, best_epoch, bad, step = -1.0, -1, 0, 0
@@ -204,7 +209,9 @@ def fit(
             raise FloatingPointError(f"non-finite training loss at epoch {epoch}")
 
         val_logits = predict_logits(model, forward, val_batches, device, tc.bf16)
-        val_loss = float(F.cross_entropy(torch.from_numpy(val_logits), torch.from_numpy(val_labels)))
+        val_loss = float(
+            F.cross_entropy(torch.from_numpy(val_logits), torch.from_numpy(val_labels))
+        )
         val_f1 = float(f1_score(val_labels, val_logits.argmax(1), average="macro"))
         ctx.log_metric("train/loss", loss_sum / max(seen, 1), step=epoch)
         ctx.log_metric("train/lr", sched.get_last_lr()[0], step=epoch)
@@ -236,12 +243,19 @@ def classifier_forward(model: torch.nn.Module) -> Forward:
 
 
 def fit_classifier(
-    model: torch.nn.Module, tokenizer: Any, train: Split, val: Split, tc: TrainConfig,
+    model: torch.nn.Module,
+    tokenizer: Any,
+    train: Split,
+    val: Split,
+    tc: TrainConfig,
     ctx: RunContext,
 ) -> dict[str, Any]:
     """Token-level training of a sequence classifier (a3, a4)."""
     pad = tokenizer.pad_token_id
-    enc_train, enc_val = encode(tokenizer, train, tc.max_length), encode(tokenizer, val, tc.max_length)
+    enc_train, enc_val = (
+        encode(tokenizer, train, tc.max_length),
+        encode(tokenizer, val, tc.max_length),
+    )
     ctx.log_metric("data/truncated_pct", enc_train.truncated_pct)
     ctx.log_metric("data/truncated_pct_val", enc_val.truncated_pct)
     if tc.gradient_checkpointing:
@@ -254,7 +268,9 @@ def fit_classifier(
         return token_batches(enc_train, tc.max_tokens_per_batch, pad, rng)
 
     val_batches = token_batches(enc_val, tc.eval_max_tokens_per_batch, pad)
-    return fit(model, classifier_forward(model), train_batches, val_batches, enc_val.labels, tc, ctx)
+    return fit(
+        model, classifier_forward(model), train_batches, val_batches, enc_val.labels, tc, ctx
+    )
 
 
 def predict_classifier(
@@ -263,4 +279,3 @@ def predict_classifier(
     enc = encode(tokenizer, split, tc.max_length)
     batches = token_batches(enc, tc.eval_max_tokens_per_batch, tokenizer.pad_token_id)
     return predict_logits(model, classifier_forward(model), batches, device, tc.bf16)
-

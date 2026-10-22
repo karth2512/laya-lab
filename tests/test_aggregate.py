@@ -50,8 +50,8 @@ def _fixture() -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
         {"run_id": "parent", "tags.arm": "a4_laya_lora"},  # parent run: no seed/fraction
         {
             **_run("jev-dev", "a5_jev_api", 0, 1.0, 0.0, stage="dev"),
-            "metrics.wording/plain/macro_f1": 0.5,
-            "metrics.wording/short/macro_f1": 0.3,
+            "metrics.wording/plain/val_macro_f1": 0.5,
+            "metrics.wording/short/val_macro_f1": 0.3,
         },
     ]
     preds = {

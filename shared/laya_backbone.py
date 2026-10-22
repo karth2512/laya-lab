@@ -26,7 +26,7 @@ _CHARS = list("abcdefghijklmnopqrstuvwxyz0123456789.,;:()-%/")
 def load_classifier(
     cfg: dict[str, Any], device: str, num_labels: int = N_CLASSES
 ) -> tuple[ModernBertForSequenceClassification, PreTrainedTokenizerBase]:
-    """(classifier, tokenizer) on `device` in fp32. Reads `cfg["arm"]["backbone"]` and `cfg["laya"]`."""
+    """(classifier, tokenizer) on `device`, fp32. Reads `cfg["arm"]["backbone"]`, `cfg["laya"]`."""
     bb = cfg["arm"].get("backbone", {})
     if bb.get("tiny_random", False):
         model, tok = _tiny(num_labels)
@@ -35,7 +35,7 @@ def load_classifier(
     model.config.classifier_pooling = bb.get("classifier_pooling", "mean")
     model.config.classifier_dropout = float(bb.get("classifier_dropout", 0.0))
     model.drop.p = model.config.classifier_dropout
-    return model.to(device), tok
+    return model.to(device), tok  # type: ignore[arg-type]
 
 
 def _from_laya(
@@ -78,7 +78,7 @@ def _tiny(num_labels: int) -> tuple[ModernBertForSequenceClassification, PreTrai
         sep_token="[SEP]",
         mask_token="[MASK]",
     )
-    config = ModernBertConfig(
+    config = ModernBertConfig(  # type: ignore[call-arg]
         vocab_size=len(vocab),
         hidden_size=32,
         intermediate_size=64,
@@ -97,7 +97,7 @@ def _tiny(num_labels: int) -> tuple[ModernBertForSequenceClassification, PreTrai
 
 
 def pool(model: Any, hidden: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
-    """The classifier's pooling (cls or masked mean), as in `ModernBertForSequenceClassification`."""
+    """The classifier's pooling (cls or masked mean), as in ModernBertForSequenceClassification."""
     if model.config.classifier_pooling == "cls":
         return hidden[:, 0]
     mask = attention_mask.unsqueeze(-1).to(hidden.dtype)

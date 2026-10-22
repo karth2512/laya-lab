@@ -48,7 +48,9 @@ def normalize_runs(raw: pd.DataFrame) -> pd.DataFrame:
     df["variant"] = col("params.variant").fillna("").astype(str)
     df = df[df["arm"].notna() & df["seed"].notna() & df["fraction"].notna()].copy()
     df["seed"] = df["seed"].astype(int)
-    df["method"] = np.where(df["variant"] == "", df["arm"], df["arm"] + "/" + df["variant"])
+    df["method"] = [
+        f"{a}/{v}" if v else str(a) for a, v in zip(df["arm"], df["variant"], strict=True)
+    ]
     return df.reset_index(drop=True)
 
 
@@ -196,15 +198,15 @@ def wording_spread(runs: pd.DataFrame) -> pd.DataFrame:
     """Val macro-F1 per label-wording variant for a1/a5.
 
     Reads either per-variant dev runs (`variant` param set) or metrics named
-    `wording/<variant>/macro_f1` logged on a single run.
+    `wording/<variant>/val_macro_f1` logged on a single run (as a1 and a5 do).
     """
     rows = []
     zs = runs[runs["arm"].isin(ZERO_SHOT_ARMS)]
     for arm, g in zs.groupby("arm"):
         scores: dict[str, float] = {}
         for c in g.columns:
-            if c.startswith("metrics.wording/") and c.endswith("/macro_f1"):
-                variant = c.removeprefix("metrics.wording/").removesuffix("/macro_f1")
+            if c.startswith("metrics.wording/") and c.endswith("/val_macro_f1"):
+                variant = c.removeprefix("metrics.wording/").removesuffix("/val_macro_f1")
                 val = g[c].dropna()
                 if not val.empty:
                     scores[variant] = float(val.iloc[-1])

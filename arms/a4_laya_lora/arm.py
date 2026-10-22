@@ -21,12 +21,14 @@ class LoraArm(Arm):
         self.tc = TrainConfig.from_cfg(ctx.cfg)
         base, self.tok = load_classifier(ctx.cfg, ctx.device)
         lora = ctx.arm_cfg["lora"]
+        r = int(lora["r"])
+        alpha = r * float(lora["alpha_ratio"]) if "alpha_ratio" in lora else float(lora["alpha"])
         self.model = get_peft_model(
             base,
             LoraConfig(
                 task_type=TaskType.SEQ_CLS,
-                r=int(lora["r"]),
-                lora_alpha=int(lora["alpha"]),
+                r=r,
+                lora_alpha=int(alpha),
                 lora_dropout=float(lora["dropout"]),
                 target_modules=list(lora["target_modules"]),
                 modules_to_save=list(lora["modules_to_save"]),
