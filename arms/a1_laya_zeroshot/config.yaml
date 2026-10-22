@@ -1,4 +1,5 @@
 # a1: Laya zero-shot typed choice question. No training; val picks the label wording.
+uses_fractions: false   # zero-shot: sweeps run it at fraction 1.0 only
 labels_file: configs/prompts/labels.yaml
 variants: null            # null = every variant in labels_file; or a list of names
 batch_size: 16

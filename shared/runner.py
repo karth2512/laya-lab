@@ -131,7 +131,7 @@ def _write_artifacts(
     df = pd.DataFrame({"id": split.ids, "true_label": split.labels})
     df["pred_label"] = preds.probs.argmax(1)
     for i, name in enumerate(data.CLASSES):
-        df[f"prob/{name}"] = preds.probs[:, i]
+        df[f"prob_{name}"] = preds.probs[:, i]
     df.to_csv(out / f"predictions_{split_name}.csv", index=False)
     child.log_artifact(out / f"predictions_{split_name}.csv")
 
