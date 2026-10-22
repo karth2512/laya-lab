@@ -58,7 +58,7 @@ Waves 4–6 need the M5 Mac (MPS, AC power) and, for a5, a Jev API key.
 | **C. Core runtime** | [~] C1 `shared/config.py`, `seed.py`, `device.py`, `cost.py` · [~] C2 `shared/mlflow_utils.py` · [~] C3 `shared/runner.py` · [~] C4 `scripts/run.py`, `scripts/sweep.py` (resumable via MLflow) · [~] C5 tests: test guard, MLflow temp-backend logging, isolation (arms ↛ arms, only `mlflow_utils` imports mlflow) |
 | **D. Baselines** | [x] D1 `arms/a0_majority` · [x] D2 `arms/a0_tfidf_logreg` (TF-IDF settings tuned on val, 6 trials) · [x] D3 `tests/test_arms_conformance.py` (parametrized over every CPU-loadable arm, stubs for heavy ones) |
 | **E. Jev API** | [x] E1 `shared/cache.py` · [x] E2 `arms/a5_jev_api` (pinned `jev-1.13.0`, httpx, retries/backoff, rate limit, timeouts, `TYPESAFE_API_KEY`, wording select on val, e2e latency tag, cost estimate) · [x] E3 `tests/test_jev.py` (mocked HTTP, cache hit/miss, retry, key never logged) |
-| **F. Laya zero-shot** | [~] F1 `arms/a1_laya_zeroshot` (`laya.load` pinned revision, typed choice, wording sweep on val, spread + option-order check) · [~] F2 conformance via stubbed `laya` |
+| **F. Laya zero-shot** | [x] F1 `arms/a1_laya_zeroshot` (`laya.load` pinned revision, typed choice, wording sweep on val, spread + option-order check) · [x] F2 conformance via stubbed `laya` |
 | **G. Laya trained** | [~] G1 `shared/laya_backbone.py` · [~] G2 `shared/train_loop.py` · [~] G3 `arms/a2_laya_frozen_head` · [~] G4 `arms/a3_laya_full_ft` (ckpt on, `--save-model` opt-in) · [~] G5 `arms/a4_laya_lora` (r∈{4,8,16,32}, `Wqkv/Wo/Wi`, adapter saved) · [~] G6 tiny-random-ModernBERT CPU test |
 | **H. Reporting** | [~] H1 `scripts/aggregate.py` (mean ± std, bootstrap CI, learning curves with a1/a5 lines, McNemar matrix, calibration plots, cost table → `reports/results.md`, `reports/figures/`) · [~] H2 `scripts/error_analysis.py` · [~] H3 tests on synthetic MLflow runs |
 
@@ -78,6 +78,7 @@ Cross-stream conventions:
 - [ ] 2.2 `make data` on real data; record split hash here
 - [ ] 2.3 `make run ARM=a0_majority` and `a0_tfidf_logreg` (dev + final) on real data; MLflow has all §5 groups/artifacts/tags
 - [ ] 2.4 CPU smoke runs of a1–a4 on a tiny fraction (`--set` caps) through `scripts/run.py`
+- [ ] 2.4b Resolve `data/truncated_pct` double-logging (a1 logs per split, overwriting; runner may also log)
 - [ ] 2.5 `make aggregate` on the runs above produces a report skeleton
 - [x] 2.6 README (usage, arm table, CC BY-SA 3.0 attribution, limitations §11 #5–7)
 
@@ -113,3 +114,4 @@ Cross-stream conventions:
 - Stream D done: a0_majority, a0_tfidf_logreg (6-trial val tuning, logits), conformance test; 4 tests pass, lint/types clean.
 - Stream E done: `shared/cache.py`, a5_jev_api (pinned model, retries, rate limit, cache, key redaction); 6 tests pass. Request/response JSON shape is a placeholder until API access.
 - Stream B done: metrics (log loss clipped), ECE/Brier/temperature scaling, bootstrap CI, McNemar (exact below 25 discordant); 8 tests pass.
+- Stream F done: a1_laya_zeroshot (pinned revision, wording sweep, spread, reversed-order check); 3 tests pass; real CPU smoke on 5 abstracts worked. Laya returns probabilities only (no logits), so a1 calibration is raw.

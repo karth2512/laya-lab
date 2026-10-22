@@ -79,9 +79,10 @@ def plot_confidence(y: np.ndarray, probs: np.ndarray, title: str, path: Path) ->
     conf = probs.max(1)
     correct = probs.argmax(1) == y
     fig, ax = plt.subplots(figsize=(6, 4))
-    bins = np.linspace(0, 1, 21)
-    ax.hist(conf[correct], bins=bins, alpha=0.6, label="correct", density=True)
-    ax.hist(conf[~correct], bins=bins, alpha=0.6, label="error", density=True)
+    bins = np.linspace(0, 1, 21).tolist()
+    for mask, label in ((correct, "correct"), (~correct, "error")):
+        if mask.any():
+            ax.hist(conf[mask], bins=bins, alpha=0.6, label=label, density=True)
     ax.set_xlabel("max probability")
     ax.set_ylabel("density")
     ax.set_title(title)

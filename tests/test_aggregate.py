@@ -112,8 +112,9 @@ def test_confusion_pairs_and_error_report(tmp_path: Path) -> None:
     assert set(pairs["involves catch-all"]) == {""}  # catch-all name is not in these classes
 
     runs, preds = _fixture()
-    texts = {"test-0": "an abstract about tumors"}
+    texts = {f"test-{i}": "an abstract about tumors" for i in range(N)}
     path = build_error_report(runs, preds.get, tmp_path, texts)
     text = path.read_text()
-    assert "## a4_laya_lora" in text and "an abstract about tumors" in text
+    assert "## a4_laya_lora" in text and "## a1_laya_zeroshot" in text
+    assert "an abstract about tumors" in text
     assert (tmp_path / "figures" / "error_confidence_a1_laya_zeroshot.png").exists()
