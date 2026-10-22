@@ -1,0 +1,10 @@
+.venv/
+data/
+mlflow.db
+mlartifacts/
+.env
+__pycache__/
+.*_cache/
+spikes/m0/results/*.log
+spikes/**
+.claude/settings.local.json # optional
