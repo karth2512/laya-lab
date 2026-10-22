@@ -64,14 +64,29 @@ def load_splits(
 
 
 def _context(
-    cfg: dict[str, Any], arm: str, stage: Stage, seed: int, fraction: float, device: str,
-    scratch: Path, child: ChildRun,
-) -> RunContext:  # fmt: skip
+    cfg: dict[str, Any],
+    arm: str,
+    stage: Stage,
+    seed: int,
+    fraction: float,
+    device: str,
+    scratch: Path,
+    child: ChildRun,
+) -> RunContext:
     return RunContext(
-        cfg=cfg, arm=arm, stage=stage, seed=seed, fraction=fraction, device=device,
-        scratch_dir=scratch, log_metric=child.log_metric, log_param=child.log_param,
-        log_artifact=child.log_artifact, log_dict=child.log_dict, set_tag=child.set_tag,
-    )  # fmt: skip
+        cfg=cfg,
+        arm=arm,
+        stage=stage,
+        seed=seed,
+        fraction=fraction,
+        device=device,
+        scratch_dir=scratch,
+        log_metric=child.log_metric,
+        log_param=child.log_param,
+        log_artifact=child.log_artifact,
+        log_dict=child.log_dict,
+        set_tag=child.set_tag,
+    )
 
 
 def _measure_latency(arm: Arm, split: Split, ctx: RunContext, n: int) -> np.ndarray:
@@ -96,7 +111,9 @@ def _evaluate(
     return {f"{prefix}/{k}": v for k, v in metrics.items()}
 
 
-def _bootstrap(split: Split, preds: Predictions, cfg: dict[str, Any], seed: int) -> dict[str, float]:
+def _bootstrap(
+    split: Split, preds: Predictions, cfg: dict[str, Any], seed: int
+) -> dict[str, float]:
     out = {}
     for metric in ("macro_f1", "accuracy"):
         low, high = bootstrap_ci(
@@ -110,7 +127,7 @@ def _bootstrap(split: Split, preds: Predictions, cfg: dict[str, Any], seed: int)
 def _write_artifacts(
     out: Path, split_name: str, split: Split, preds: Predictions, child: ChildRun
 ) -> None:
-    """predictions_<split>.csv, and for the report split: report JSON and plots."""
+    """predictions_<split>.csv: id, true label, predicted label, per-class probabilities."""
     df = pd.DataFrame({"id": split.ids, "true_label": split.labels})
     df["pred_label"] = preds.probs.argmax(1)
     for i, name in enumerate(data.CLASSES):
@@ -120,17 +137,22 @@ def _write_artifacts(
 
 
 def _write_report_artifacts(out: Path, split: Split, preds: Predictions, child: ChildRun) -> None:
+    """classification_report.json, confusion_matrix.png and calibration_curve.png."""
     labels = list(range(len(data.CLASSES)))
     y_pred = preds.probs.argmax(1)
     report = classification_report(
-        split.labels, y_pred, labels=labels, target_names=list(data.CLASSES),
-        output_dict=True, zero_division=0,
-    )  # fmt: skip
+        split.labels,
+        y_pred,
+        labels=labels,
+        target_names=list(data.CLASSES),
+        output_dict=True,
+        zero_division=0,
+    )
     (out / "classification_report.json").write_text(json.dumps(report, indent=1))
 
     fig, ax = plt.subplots(figsize=(6, 5))
-    ax.imshow(confusion_matrix(split.labels, y_pred, labels=labels), cmap="Blues")
     cm = confusion_matrix(split.labels, y_pred, labels=labels)
+    ax.imshow(cm, cmap="Blues")
     for (r, c), v in np.ndenumerate(cm):
         ax.text(c, r, str(v), ha="center", va="center", fontsize=8)
     ax.set(xlabel="predicted", ylabel="true", xticks=labels, yticks=labels)
@@ -192,9 +214,14 @@ def run(
         warnings.simplefilter("always")
         out = Path(tmp)
         child.set_tags(
-            {"arm": arm, "stage": stage, "data_hash": split_hash, **env_tags(device),
-             "deterministic": str(deterministic).lower()}
-        )  # fmt: skip
+            {
+                "arm": arm,
+                "stage": stage,
+                "data_hash": split_hash,
+                **env_tags(device),
+                "deterministic": str(deterministic).lower(),
+            }
+        )
         child.log_params(
             {**flatten(cfg), "arm_name": arm, "split_hash": split_hash, "device_used": device}
         )
@@ -255,7 +282,6 @@ def run(
 
         if "data/truncated_pct" not in child.logged:
             metrics["data/truncated_pct"] = 0.0  # arms that tokenize log their own value
-        memory._sample()
         metrics.update(memory.metrics())
         child.log_metrics(metrics)
         fallback = any(MPS_FALLBACK_TEXT in str(w.message) for w in caught)

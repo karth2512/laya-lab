@@ -19,7 +19,7 @@ def _torch() -> Any:
 
 
 def select_device(pref: str = "auto") -> str:
-    """`LAYA_BENCH_DEVICE` env wins, then `pref`; `auto`/`mps` fall back to cpu when MPS is absent."""
+    """`LAYA_BENCH_DEVICE` env wins, then `pref`; falls back to cpu when MPS is absent."""
     pref = os.environ.get("LAYA_BENCH_DEVICE", pref)
     if pref == "cpu":
         return "cpu"

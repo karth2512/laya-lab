@@ -83,9 +83,7 @@ class Tracker:
             self.experiment_id = exp.experiment_id
 
     def _runs(self, filter_string: str) -> list[Any]:
-        return list(
-            self.client.search_runs([self.experiment_id], filter_string, max_results=50000)
-        )
+        return list(self.client.search_runs([self.experiment_id], filter_string, max_results=50000))
 
     def parent_run_id(self, arm: str) -> str:
         runs = self._runs(f"tags.arm = '{arm}' and tags.run_kind = 'parent'")
@@ -100,7 +98,9 @@ class Tracker:
     def completed_run_names(self, arm: str) -> set[str]:
         runs = self._runs(f"tags.arm = '{arm}' and tags.run_kind = 'child'")
         return {
-            r.info.run_name for r in runs if r.info.status == RunStatus.to_string(RunStatus.FINISHED)
+            r.info.run_name
+            for r in runs
+            if r.info.status == RunStatus.to_string(RunStatus.FINISHED)
         }
 
     @contextlib.contextmanager
