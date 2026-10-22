@@ -387,7 +387,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     runs = load_runs(args.experiment)
-    fetch = mlflow_fetcher(args.out / ".artifact_cache")
+    fetch = mlflow_fetcher(Path("data/cache/artifacts"))
     path = build_report(runs, fetch, args.out, args.bootstrap)
     print(f"wrote {path}")
 
