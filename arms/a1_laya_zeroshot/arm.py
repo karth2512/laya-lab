@@ -115,6 +115,10 @@ class LayaZeroShot(Arm):
             ctx.log_metric("wording/order_reversed_val_macro_f1", rev_f1)
             extra["order_reversed_val_macro_f1"] = rev_f1
         ctx.log_dict(extra, "wording_selection.json")
+        # No training data, so truncation is reported on val (predict is also called per example).
+        truncated = self._truncated_pct(val.texts, self.selected)
+        if truncated is not None:
+            ctx.log_metric("data/truncated_pct", truncated)
         model = getattr(self.agent, "model", None)
         total = sum(p.numel() for p in model.parameters()) if model is not None else None
         return FitReport(trainable_params=0, total_params=total, extra=extra)
@@ -122,9 +126,6 @@ class LayaZeroShot(Arm):
     def predict(self, split: Split, ctx: RunContext) -> Predictions:
         if self.selected is None:
             raise RuntimeError("fit() must select a wording before predict()")
-        truncated = self._truncated_pct(split.texts, self.selected)
-        if truncated is not None:
-            ctx.log_metric("data/truncated_pct", truncated)
         return Predictions(ids=list(split.ids), probs=self._score(split.texts, self.selected))
 
     def teardown(self, ctx: RunContext) -> None:

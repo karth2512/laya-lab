@@ -45,6 +45,11 @@ def tracker_from_cfg(cfg: dict[str, Any]) -> Tracker:
     return Tracker(uri, cfg["experiment"], cfg["mlflow"]["artifact_location"])
 
 
+def _cap(split: Split, n: int) -> Split:
+    """Evenly spaced subset of at most n examples (keeps a class mix in id-ordered splits)."""
+    return split.subset(np.linspace(0, len(split) - 1, min(n, len(split))).astype(int))
+
+
 def load_splits(
     cfg: dict[str, Any], stage: Stage, seed: int, fraction: float
 ) -> tuple[Split, Split, Split | None, str]:
@@ -60,6 +65,10 @@ def load_splits(
     test = None
     if test_df is not None:
         test = data.to_split(test_df.set_index("id", drop=False).loc[manifest["test"]])
+    cap = cfg["eval"].get("max_examples")  # smoke runs only; never set for real results
+    if cap:
+        train, val = _cap(train, cap), _cap(val, cap)
+        test = _cap(test, cap) if test is not None else None
     return train, val, test, str(manifest["hash"])
 
 

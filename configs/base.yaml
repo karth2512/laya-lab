@@ -22,6 +22,7 @@ eval:
   ece_bins: 15
   latency_examples: 100     # batch-size-1 examples timed for latency/p50/p95
   save_model: false
+  max_examples: null        # smoke runs only: cap every split to N examples
 laya:
   hub_id: convaiinnovations/laya
   revision: 7b928d828b7b0e022f929d9bd2e44165aa270148

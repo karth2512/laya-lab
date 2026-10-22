@@ -59,7 +59,7 @@ Waves 4–6 need the M5 Mac (MPS, AC power) and, for a5, a Jev API key.
 | **D. Baselines** | [x] D1 `arms/a0_majority` · [x] D2 `arms/a0_tfidf_logreg` (TF-IDF settings tuned on val, 6 trials) · [x] D3 `tests/test_arms_conformance.py` (parametrized over every CPU-loadable arm, stubs for heavy ones) |
 | **E. Jev API** | [x] E1 `shared/cache.py` · [x] E2 `arms/a5_jev_api` (pinned `jev-1.13.0`, httpx, retries/backoff, rate limit, timeouts, `TYPESAFE_API_KEY`, wording select on val, e2e latency tag, cost estimate) · [x] E3 `tests/test_jev.py` (mocked HTTP, cache hit/miss, retry, key never logged) |
 | **F. Laya zero-shot** | [x] F1 `arms/a1_laya_zeroshot` (`laya.load` pinned revision, typed choice, wording sweep on val, spread + option-order check) · [x] F2 conformance via stubbed `laya` |
-| **G. Laya trained** | [~] G1 `shared/laya_backbone.py` · [~] G2 `shared/train_loop.py` · [~] G3 `arms/a2_laya_frozen_head` · [~] G4 `arms/a3_laya_full_ft` (ckpt on, `--save-model` opt-in) · [~] G5 `arms/a4_laya_lora` (r∈{4,8,16,32}, `Wqkv/Wo/Wi`, adapter saved) · [~] G6 tiny-random-ModernBERT CPU test |
+| **G. Laya trained** | [x] G1 `shared/laya_backbone.py` · [x] G2 `shared/train_loop.py` · [x] G3 `arms/a2_laya_frozen_head` · [x] G4 `arms/a3_laya_full_ft` (ckpt on, `--save-model` opt-in) · [x] G5 `arms/a4_laya_lora` (r∈{4,8,16,32}, `Wqkv/Wo/Wi`, adapter saved) · [x] G6 tiny-random-ModernBERT CPU test |
 | **H. Reporting** | [x] H1 `scripts/aggregate.py` (mean ± std, bootstrap CI, learning curves with a1/a5 lines, McNemar matrix, calibration plots, cost table → `reports/results.md`, `reports/figures/`) · [x] H2 `scripts/error_analysis.py` · [x] H3 tests on synthetic MLflow runs |
 
 Every arm folder: `arm.py` (`build(cfg) -> Arm`), `config.yaml`, `README.md`.
@@ -74,11 +74,11 @@ Cross-stream conventions:
 
 ## Wave 2: Integrate (needs wave 1)
 
-- [ ] 2.1 `make check` green (ruff, mypy, pytest on CPU)
+- [x] 2.1 `make check` green (ruff, mypy, 44 tests on CPU); ruff now skips `*.md` and `spikes/`
 - [x] 2.2 `make data` on real data. Split hash `84fda3400fd151ed62e04fd048cd8503eed40c05854d2dfd49051abfa4b2a1a0`; train_pool 10,395 / val 1,155 / test 2,888
-- [ ] 2.3 `make run ARM=a0_majority` and `a0_tfidf_logreg` (dev + final) on real data; MLflow has all §5 groups/artifacts/tags
-- [ ] 2.4 CPU smoke runs of a1–a4 on a tiny fraction (`--set` caps) through `scripts/run.py`
-- [ ] 2.4b Resolve `data/truncated_pct` double-logging (a1 logs per split, overwriting; runner may also log)
+- [x] 2.3 `make run ARM=a0_majority` and `a0_tfidf_logreg` (dev + final) on real data; MLflow has all §5 tags and artifacts. Test: majority acc 0.333 / F1 0.10; TF-IDF val macro-F1 0.526, test acc 0.554 (CI 0.536–0.572). MPS memory metrics only appear on MPS
+- [~] 2.4 CPU smoke runs of a1–a4 on a tiny fraction (`--set` caps) through `scripts/run.py` (new `eval.max_examples` cap for smoke runs only)
+- [x] 2.4b `data/truncated_pct` = train split (a2–a4) or val (a1, logged once in `fit`); `_val` suffix for val in trained arms; runner logs 0 otherwise
 - [ ] 2.5 `make aggregate` on the runs above produces a report skeleton
 - [x] 2.6 README (usage, arm table, CC BY-SA 3.0 attribution, limitations §11 #5–7)
 
@@ -118,3 +118,4 @@ Cross-stream conventions:
 - Stream A done: data, splits, prepare_data, audit; 6 tests pass. Truncation 1.55/1.56/1.90% (pool/val/test). Corpus has cross-split exact duplicates and multi-label repeats (kept: official split used as-is). Laya tokenizer loads with `subfolder="tokenizer"`.
 - Stream H done: aggregate (results table, curves, McNemar, calibration, cost, wording spread) and error_analysis; 5 tests pass. Added `load_runs`/`download_artifact` to `mlflow_utils`. Fixed wording-metric name to match a1/a5 (`wording/<v>/val_macro_f1`). Runner must write `predictions_*.csv` as `id,true_label,pred_label,prob_<class>…`.
 - Stream C done: config/seed/device/cost/mlflow_utils/runner, run + sweep (resumable), guard/MLflow/isolation tests (7 pass). Integration fixes: predictions CSV columns renamed `prob_<class>` to match aggregate; `uses_fractions: false` added to a0_majority, a1, a5. Full suite: 44 passed.
+- Stream G done: laya_backbone (strict load, 395.8M params verified on real checkpoint), shared train loop, a2/a3/a4; 5 tests pass on a tiny random backbone. **Wave 1 complete.**
