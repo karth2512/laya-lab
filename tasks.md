@@ -56,7 +56,7 @@ Waves 4–6 need the M5 Mac (MPS, AC power) and, for a5, a Jev API key.
 | **A. Data** | [~] A1 `shared/data.py` (download from HF, label map, hygiene: exact + near-dup across splits, token lengths/% truncated, class balance) · [~] A2 `shared/splits.py` · [~] A3 `scripts/prepare_data.py` → `data/splits/split_v1.json` + `reports/data_audit.md` · [~] A4 `tests/test_splits.py` + 50-example fixture `tests/fixtures/` |
 | **B. Metrics** | [~] B1 `shared/metrics.py` · [~] B2 `shared/calibration.py` · [~] B3 `shared/stats.py` · [~] B4 `tests/test_metrics.py` (sklearn parity, hand-computed ECE/Brier) |
 | **C. Core runtime** | [~] C1 `shared/config.py`, `seed.py`, `device.py`, `cost.py` · [~] C2 `shared/mlflow_utils.py` · [~] C3 `shared/runner.py` · [~] C4 `scripts/run.py`, `scripts/sweep.py` (resumable via MLflow) · [~] C5 tests: test guard, MLflow temp-backend logging, isolation (arms ↛ arms, only `mlflow_utils` imports mlflow) |
-| **D. Baselines** | [~] D1 `arms/a0_majority` · [~] D2 `arms/a0_tfidf_logreg` (TF-IDF settings tuned on val, 6 trials) · [~] D3 `tests/test_arms_conformance.py` (parametrized over every CPU-loadable arm, stubs for heavy ones) |
+| **D. Baselines** | [x] D1 `arms/a0_majority` · [x] D2 `arms/a0_tfidf_logreg` (TF-IDF settings tuned on val, 6 trials) · [x] D3 `tests/test_arms_conformance.py` (parametrized over every CPU-loadable arm, stubs for heavy ones) |
 | **E. Jev API** | [~] E1 `shared/cache.py` · [~] E2 `arms/a5_jev_api` (pinned `jev-1.13.0`, httpx, retries/backoff, rate limit, timeouts, `TYPESAFE_API_KEY`, wording select on val, e2e latency tag, cost estimate) · [~] E3 `tests/test_jev.py` (mocked HTTP, cache hit/miss, retry, key never logged) |
 | **F. Laya zero-shot** | [~] F1 `arms/a1_laya_zeroshot` (`laya.load` pinned revision, typed choice, wording sweep on val, spread + option-order check) · [~] F2 conformance via stubbed `laya` |
 | **G. Laya trained** | [~] G1 `shared/laya_backbone.py` · [~] G2 `shared/train_loop.py` · [~] G3 `arms/a2_laya_frozen_head` · [~] G4 `arms/a3_laya_full_ft` (ckpt on, `--save-model` opt-in) · [~] G5 `arms/a4_laya_lora` (r∈{4,8,16,32}, `Wqkv/Wo/Wi`, adapter saved) · [~] G6 tiny-random-ModernBERT CPU test |
@@ -110,3 +110,4 @@ Cross-stream conventions:
 
 - Wave 0 done: deps added, skeleton, interface, configs and `tests/helpers.py` in place.
 - Wave 1 started: streams A–H running in parallel.
+- Stream D done: a0_majority, a0_tfidf_logreg (6-trial val tuning, logits), conformance test; 4 tests pass, lint/types clean.
