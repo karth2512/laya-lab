@@ -53,7 +53,7 @@ Waves 4–6 need the M5 Mac (MPS, AC power) and, for a5, a Jev API key.
 
 | Stream | Tasks |
 |---|---|
-| **A. Data** | [~] A1 `shared/data.py` (download from HF, label map, hygiene: exact + near-dup across splits, token lengths/% truncated, class balance) · [~] A2 `shared/splits.py` · [~] A3 `scripts/prepare_data.py` → `data/splits/split_v1.json` + `reports/data_audit.md` · [~] A4 `tests/test_splits.py` + 50-example fixture `tests/fixtures/` |
+| **A. Data** | [x] A1 `shared/data.py` (download from HF, label map, hygiene: exact + near-dup across splits, token lengths/% truncated, class balance) · [x] A2 `shared/splits.py` · [x] A3 `scripts/prepare_data.py` → `data/splits/split_v1.json` + `reports/data_audit.md` · [x] A4 `tests/test_splits.py` + 50-example fixture `tests/fixtures/` |
 | **B. Metrics** | [x] B1 `shared/metrics.py` · [x] B2 `shared/calibration.py` · [x] B3 `shared/stats.py` · [x] B4 `tests/test_metrics.py` (sklearn parity, hand-computed ECE/Brier) |
 | **C. Core runtime** | [~] C1 `shared/config.py`, `seed.py`, `device.py`, `cost.py` · [~] C2 `shared/mlflow_utils.py` · [~] C3 `shared/runner.py` · [~] C4 `scripts/run.py`, `scripts/sweep.py` (resumable via MLflow) · [~] C5 tests: test guard, MLflow temp-backend logging, isolation (arms ↛ arms, only `mlflow_utils` imports mlflow) |
 | **D. Baselines** | [x] D1 `arms/a0_majority` · [x] D2 `arms/a0_tfidf_logreg` (TF-IDF settings tuned on val, 6 trials) · [x] D3 `tests/test_arms_conformance.py` (parametrized over every CPU-loadable arm, stubs for heavy ones) |
@@ -75,7 +75,7 @@ Cross-stream conventions:
 ## Wave 2: Integrate (needs wave 1)
 
 - [ ] 2.1 `make check` green (ruff, mypy, pytest on CPU)
-- [ ] 2.2 `make data` on real data; record split hash here
+- [x] 2.2 `make data` on real data. Split hash `84fda3400fd151ed62e04fd048cd8503eed40c05854d2dfd49051abfa4b2a1a0`; train_pool 10,395 / val 1,155 / test 2,888
 - [ ] 2.3 `make run ARM=a0_majority` and `a0_tfidf_logreg` (dev + final) on real data; MLflow has all §5 groups/artifacts/tags
 - [ ] 2.4 CPU smoke runs of a1–a4 on a tiny fraction (`--set` caps) through `scripts/run.py`
 - [ ] 2.4b Resolve `data/truncated_pct` double-logging (a1 logs per split, overwriting; runner may also log)
@@ -103,7 +103,7 @@ Cross-stream conventions:
 ## Wave 6: M6 report (needs wave 5)
 
 - [ ] 6.1 `make aggregate` + `scripts/error_analysis.py` → `reports/results.md`
-- [ ] 6.2 Write up limitations (contamination, label noise, HP parity, same-machine timing caveat)
+- [ ] 6.2 Write up limitations, incl. corpus duplicates (900 exact train↔test, 2,929 texts with >1 label; see `reports/data_audit.md`), (contamination, label noise, HP parity, same-machine timing caveat)
 
 ---
 
@@ -115,3 +115,4 @@ Cross-stream conventions:
 - Stream E done: `shared/cache.py`, a5_jev_api (pinned model, retries, rate limit, cache, key redaction); 6 tests pass. Request/response JSON shape is a placeholder until API access.
 - Stream B done: metrics (log loss clipped), ECE/Brier/temperature scaling, bootstrap CI, McNemar (exact below 25 discordant); 8 tests pass.
 - Stream F done: a1_laya_zeroshot (pinned revision, wording sweep, spread, reversed-order check); 3 tests pass; real CPU smoke on 5 abstracts worked. Laya returns probabilities only (no logits), so a1 calibration is raw.
+- Stream A done: data, splits, prepare_data, audit; 6 tests pass. Truncation 1.55/1.56/1.90% (pool/val/test). Corpus has cross-split exact duplicates and multi-label repeats (kept: official split used as-is). Laya tokenizer loads with `subfolder="tokenizer"`.

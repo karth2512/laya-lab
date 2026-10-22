@@ -166,3 +166,31 @@ def env_tags(device: str) -> dict[str, str]:
         "python_version": sys.version.split()[0],
         "library_versions": _library_versions(),
     }
+
+
+# --- Read side for scripts/aggregate.py and scripts/error_analysis.py (stream H) ---
+
+
+def _tracking_uri() -> str:
+    return os.environ.get("MLFLOW_TRACKING_URI", "sqlite:///mlflow.db")
+
+
+def load_runs(experiment: str) -> Any:
+    """Finished child runs as a DataFrame (`run_id`, `metrics.*`, `params.*`, `tags.*`)."""
+    import mlflow
+
+    mlflow.set_tracking_uri(_tracking_uri())
+    return mlflow.search_runs(
+        experiment_names=[experiment],
+        filter_string="tags.run_kind = 'child' and attributes.status = 'FINISHED'",
+        max_results=50000,
+    )
+
+
+def download_artifact(run_id: str, path: str, dst: str | Path) -> Path:
+    """Download one artifact of a run into `dst` (cached: skipped if already present)."""
+    target = Path(dst) / path
+    if not target.exists():
+        Path(dst).mkdir(parents=True, exist_ok=True)
+        MlflowClient(tracking_uri=_tracking_uri()).download_artifacts(run_id, path, str(dst))
+    return target
