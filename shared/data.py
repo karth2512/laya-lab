@@ -101,6 +101,12 @@ def find_duplicates(splits: dict[str, Split], prefix_words: int = 30) -> dict[st
     }
     names = list(splits)
     out: dict[str, int] = {}
+    # Same normalized text carrying different labels anywhere (label-noise signal).
+    seen: dict[str, set[int]] = {}
+    for s in splits.values():
+        for t, y in zip(s.texts, s.labels.tolist(), strict=True):
+            seen.setdefault(_digest(_normalize(t)), set()).add(int(y))
+    out["near/texts_with_conflicting_labels"] = sum(len(v) > 1 for v in seen.values())
     for kind, fn in keys.items():
         hashed = {n: [fn(t) for t in splits[n].texts] for n in names}
         for i, a in enumerate(names):
@@ -119,7 +125,7 @@ def token_lengths(
         try:
             from transformers import AutoTokenizer
 
-            tok = AutoTokenizer.from_pretrained(hub_id, revision=revision)
+            tok = AutoTokenizer.from_pretrained(hub_id, revision=revision, subfolder="tokenizer")
             ids = tok(texts, add_special_tokens=True, truncation=False)["input_ids"]
             return np.array([len(x) for x in ids]), f"Laya tokenizer (`{hub_id}`@`{revision}`)"
         except Exception as exc:  # noqa: BLE001 - any failure falls back to a rough count
@@ -175,7 +181,9 @@ def audit(
         "",
         "`exact` = identical text; `near` = identical after lowercasing and stripping "
         "punctuation; `near_prefix` = identical first 30 normalized words. "
-        "`a~a` counts repeats within a split, `a~b` counts shared texts across splits.",
+        "`a~a` counts repeats within a split, `a~b` counts shared texts across splits. "
+        "`texts_with_conflicting_labels` counts distinct normalized texts that appear with more "
+        "than one label (the corpus repeats multi-topic abstracts once per label).",
         "",
         "| Check | Count |",
         "|---|---|",

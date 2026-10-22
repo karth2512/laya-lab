@@ -41,9 +41,7 @@ def compute_metrics(
     out: dict[str, float] = {
         "accuracy": accuracy_score(y_true, y_pred),
         "macro_f1": f1_score(y_true, y_pred, labels=labels, average="macro", zero_division=0),
-        "weighted_f1": f1_score(
-            y_true, y_pred, labels=labels, average="weighted", zero_division=0
-        ),
+        "weighted_f1": f1_score(y_true, y_pred, labels=labels, average="weighted", zero_division=0),
         "balanced_accuracy": balanced_accuracy_score(y_true, y_pred),
         "mcc": matthews_corrcoef(y_true, y_pred),
         "log_loss": log_loss(y_true, clipped, labels=labels),
@@ -51,9 +49,7 @@ def compute_metrics(
         "ece": ece(y_true, probs, n_bins),
         "mean_confidence": probs.max(axis=1).mean(),
     }
-    p, r, f, _ = precision_recall_fscore_support(
-        y_true, y_pred, labels=labels, zero_division=0
-    )
+    p, r, f, _ = precision_recall_fscore_support(y_true, y_pred, labels=labels, zero_division=0)
     for i, name in enumerate(class_names):
         out[f"precision/{name}"] = p[i]
         out[f"recall/{name}"] = r[i]

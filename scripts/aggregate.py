@@ -292,7 +292,7 @@ def plot_calibration(final: pd.DataFrame, fetch: FetchPredictions, path: Path) -
 # ---------------------------------------------------------------------------- report
 
 
-def _md(df: pd.DataFrame, index: bool = False) -> str:
+def markdown_table(df: pd.DataFrame, index: bool = False) -> str:
     if df.empty:
         return "_No data._\n"
     frame = df.reset_index() if index else df
@@ -333,7 +333,7 @@ def build_report(
             "",
             "## Results table (stage=final)",
             "",
-            _md(results_table(final, fetch, n_boot)),
+            markdown_table(results_table(final, fetch, n_boot)),
             "## Learning curves",
             "",
             "Zero-shot arms (a1, a5) are dashed horizontal reference lines.",
@@ -342,7 +342,7 @@ def build_report(
             "",
             "## McNemar p-values (test, fraction 1.0, seed-matched)",
             "",
-            _md(mcn, index=True),
+            markdown_table(mcn, index=True),
             "## Calibration",
             "",
             "![calibration](figures/calibration.png)",
@@ -353,10 +353,10 @@ def build_report(
             "machine (M5, 16 GB) under the same conditions. a5 latency is end-to-end",
             "(network and queueing included) and not comparable to local arms.",
             "",
-            _md(cost_table(final)),
+            markdown_table(cost_table(final)),
             "## Label-wording spread (val)",
             "",
-            _md(wording_spread(runs)),
+            markdown_table(wording_spread(runs)),
         ]
     )
     path = out / "results.md"
