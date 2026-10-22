@@ -1,0 +1,27 @@
+# Defaults shared by every run. Arm config.yaml files go under the `arm:` key at load time.
+experiment: laya-medabs-bench
+dataset:
+  hf_id: TimSchopf/medical_abstracts
+  version: v1
+  raw_dir: data/raw
+  split_manifest: data/splits/split_v1.json
+  val_fraction: 0.10
+  split_seed: 1234          # carves val once; never changes
+  max_length: 512
+seeds: [0, 1, 2]
+fractions: [0.01, 0.05, 0.1, 0.25, 1.0]
+stage: dev
+seed: 0
+fraction: 1.0
+device: auto               # auto = mps if available else cpu; LAYA_BENCH_DEVICE env overrides
+mlflow:
+  tracking_uri: sqlite:///mlflow.db   # MLFLOW_TRACKING_URI env overrides
+  artifact_location: ./mlartifacts
+eval:
+  bootstrap_resamples: 1000
+  ece_bins: 15
+  latency_examples: 100     # batch-size-1 examples timed for latency/p50/p95
+  save_model: false
+laya:
+  hub_id: convaiinnovations/laya
+  revision: 7b928d828b7b0e022f929d9bd2e44165aa270148
