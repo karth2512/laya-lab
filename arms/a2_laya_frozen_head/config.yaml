@@ -1,0 +1,22 @@
+# a2: frozen Laya encoder; only the head + classifier train, on features cached once per run.
+backbone:
+  tiny_random: false
+  classifier_pooling: mean
+  classifier_dropout: 0.0
+train:
+  lr: 1.0e-3
+  weight_decay: 0.01
+  epochs: 20
+  min_steps: 200
+  effective_batch_size: 32
+  eval_max_tokens_per_batch: 8192   # feature extraction batches (token budget, pad to 64)
+  warmup_ratio: 0.06
+  optimizer: adamw
+  max_grad_norm: 1.0
+  patience: 3
+  bf16: true                        # feature extraction under bf16 autocast on MPS
+hp_trials: 6
+hp_space:
+  train.lr: [3.0e-4, 1.0e-3, 3.0e-3]
+  train.weight_decay: [0.0, 0.01]
+  backbone.classifier_dropout: [0.0, 0.1]

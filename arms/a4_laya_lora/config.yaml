@@ -1,0 +1,30 @@
+# a4: Laya + LoRA (plain LoRA; no QLoRA on macOS). Targets from M0 / ADR 0001.
+backbone:
+  tiny_random: false
+  classifier_pooling: mean
+  classifier_dropout: 0.0
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [Wqkv, Wo, Wi]     # "Wo" matches attn.Wo and mlp.Wo; embeddings stay frozen
+  modules_to_save: [head, classifier]
+train:
+  lr: 2.0e-4                   # tuned separately from a3's LR
+  weight_decay: 0.01
+  epochs: 3
+  min_steps: 200
+  effective_batch_size: 16
+  max_tokens_per_batch: 2048
+  eval_max_tokens_per_batch: 8192
+  warmup_ratio: 0.06
+  optimizer: adamw
+  max_grad_norm: 1.0
+  patience: 2
+  gradient_checkpointing: false  # M0: 6.6 vs 4.1 ex/s; turn on (and log it) if driver > 12 GB
+  bf16: true
+hp_trials: 6
+hp_space:                      # rank tuned inside the 6-trial budget (REQUIREMENTS §11 #8 default)
+  lora.r: [4, 8, 16, 32]
+  train.lr: [1.0e-4, 2.0e-4, 5.0e-4]
+  lora.alpha_ratio: [1, 2]     # alpha = ratio * r
