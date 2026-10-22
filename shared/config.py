@@ -86,13 +86,19 @@ def apply_override(cfg: dict[str, Any], override: str) -> None:
 
 
 def load_config(
-    arm: str, overrides: list[str] | None = None, base_path: Path = BASE_CONFIG
+    arm: str,
+    overrides: list[str] | None = None,
+    base_path: Path = BASE_CONFIG,
+    use_tuned: bool = True,
 ) -> dict[str, Any]:
+    """base.yaml + arm config.yaml + configs/tuned/<arm>.yaml (written by scripts.tune) + CLI."""
     cfg = _read_yaml(base_path)
     arm_cfg_path = ROOT / "arms" / arm / "config.yaml"
     if arm_cfg_path.exists():
         cfg = _deep_merge(cfg, {"arm": _read_yaml(arm_cfg_path)})
-    for o in overrides or []:
+    tuned_path = ROOT / "configs" / "tuned" / f"{arm}.yaml"
+    tuned = _read_yaml(tuned_path).get("overrides", []) if use_tuned and tuned_path.exists() else []
+    for o in [*tuned, *(overrides or [])]:
         apply_override(cfg, o)
     BaseCfg.model_validate(cfg)
     return cfg

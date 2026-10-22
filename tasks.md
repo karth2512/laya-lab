@@ -77,21 +77,32 @@ Cross-stream conventions:
 - [x] 2.1 `make check` green (ruff, mypy, 44 tests on CPU); ruff now skips `*.md` and `spikes/`
 - [x] 2.2 `make data` on real data. Split hash `84fda3400fd151ed62e04fd048cd8503eed40c05854d2dfd49051abfa4b2a1a0`; train_pool 10,395 / val 1,155 / test 2,888
 - [x] 2.3 `make run ARM=a0_majority` and `a0_tfidf_logreg` (dev + final) on real data; MLflow has all §5 tags and artifacts. Test: majority acc 0.333 / F1 0.10; TF-IDF val macro-F1 0.526, test acc 0.554 (CI 0.536–0.572). MPS memory metrics only appear on MPS
-- [~] 2.4 CPU smoke runs of a1–a4 on a tiny fraction (`--set` caps) through `scripts/run.py` (new `eval.max_examples` cap for smoke runs only)
+- [x] 2.4 CPU smoke runs of a1–a4 with the real Laya checkpoint through `scripts/run.py` at `stage=final` (24 examples, 1 step; new `eval.max_examples` cap for smoke runs only). All exit 0 in 2–3 min; trainable params match ADR 0001 (a2 1.05M, a4 r16 8.25M)
 - [x] 2.4b `data/truncated_pct` = train split (a2–a4) or val (a1, logged once in `fit`); `_val` suffix for val in trained arms; runner logs 0 otherwise
-- [ ] 2.5 `make aggregate` on the runs above produces a report skeleton
+- [x] 2.5 `aggregate` + `error_analysis` on those runs produce `results.md` (table, curves, McNemar, calibration, cost, wording spread) and `error_analysis.md`. Fixed `/None` variant suffix (runner no longer logs an empty variant)
+- [x] 2.7 Added `scripts/tune.py` + `make tune` (missing piece of §6): 6 trials from `hp_space` on val at f=1.0, resumable, best written to `configs/tuned/<arm>.yaml` which `load_config` applies. Verified end to end on a tiny backbone
 - [x] 2.6 README (usage, arm table, CC BY-SA 3.0 attribution, limitations §11 #5–7)
 
 ## Wave 3: Acceptance review (needs wave 2)
 
-- [ ] 3.1 Walk the §10 acceptance checklist; every Makefile target exists and works
-- [ ] 3.2 Fresh-clone check: `make setup && make data` reproduces the split hash
+- [x] 3.1 §10 acceptance walk (what can be checked off the Mac):
+  - [x] All 7 arms run through `scripts/run.py` with one CLI. a5 runs only against a mocked API (no key)
+  - [x] Fresh clone + `make setup` + `make data` reproduces the split hash
+  - [x] `make check` passes from a fresh clone (46 tests). Targets exist; `sweep`/`tune`/`spike` need macOS (`pmset`, `caffeinate`)
+  - [!] `make spike`: `spikes/m0/` scripts are not in the repo (`.gitignore` has `spikes/**`). Owner: commit them from the Mac and drop that ignore line
+  - [x] Each arm folder has its own README; arms import only `shared/` (test enforced)
+  - [ ] Memory budget per arm: needs MPS (wave 4)
+  - [x] MLflow final runs carry all §5 tags, artifacts and metric groups (MPS memory metrics only on MPS)
+  - [x] `aggregate.py` outputs all required tables and plots
+  - [x] `reports/data_audit.md` exists
+  - [x] Tests pass on CPU; lint and types clean
+- [x] 3.2 Fresh-clone check: `make setup && make data` reproduces the split hash `84fda340…a1a0`
 
 ## Wave 4: M2–M4 on the M5 Mac (owner; needs wave 3)
 
 - [ ] 4.1 a1 wording sweep on val (MPS) — can run in parallel with 4.2 only if not sharing the GPU; otherwise sequential
 - [ ] 4.2 a5 wording sweep on val — [!] blocked on Jev waitlist access (`TYPESAFE_API_KEY`); network-bound, can overlap MPS runs
-- [ ] 4.3 HP tuning on val at fraction 1.0, 6 trials each: a0_tfidf (CPU, can overlap), a2, a4 (incl. rank), a3 — one MPS run at a time
+- [ ] 4.3 `make tune ARM=…` for a2, a4 (incl. rank), a3 — one MPS run at a time; a0_tfidf tunes inside `fit`. Commit the resulting `configs/tuned/*.yaml`
 - [ ] 4.4 Verify a4 no-checkpointing stays under 12 GB driver on real batches; otherwise turn ckpt on and log it
 - [ ] 4.5 Owner decision: LoRA rank scope (§11 #8)
 
@@ -119,3 +130,4 @@ Cross-stream conventions:
 - Stream H done: aggregate (results table, curves, McNemar, calibration, cost, wording spread) and error_analysis; 5 tests pass. Added `load_runs`/`download_artifact` to `mlflow_utils`. Fixed wording-metric name to match a1/a5 (`wording/<v>/val_macro_f1`). Runner must write `predictions_*.csv` as `id,true_label,pred_label,prob_<class>…`.
 - Stream C done: config/seed/device/cost/mlflow_utils/runner, run + sweep (resumable), guard/MLflow/isolation tests (7 pass). Integration fixes: predictions CSV columns renamed `prob_<class>` to match aggregate; `uses_fractions: false` added to a0_majority, a1, a5. Full suite: 44 passed.
 - Stream G done: laya_backbone (strict load, 395.8M params verified on real checkpoint), shared train loop, a2/a3/a4; 5 tests pass on a tiny random backbone. **Wave 1 complete.**
+- Waves 2–3 done (off-Mac parts). Remaining work is on the M5 Mac (waves 4–6) plus the `spikes/` and Jev-key items.

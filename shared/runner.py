@@ -204,7 +204,9 @@ def run(
     """Run one (arm, stage, seed, fraction[, variant]) and log it to MLflow. Returns metrics."""
     # 1. config + seeding
     cfg = load_config(arm, overrides)
-    cfg.update(stage=stage, seed=seed, fraction=fraction, variant=variant)
+    cfg.update(stage=stage, seed=seed, fraction=fraction)
+    if variant:
+        cfg["variant"] = variant  # absent rather than "None" in MLflow params
     cfg["eval"]["save_model"] = save_model or cfg["eval"]["save_model"]
     deterministic = seed_everything(seed, bool(cfg.get("deterministic", False)))
     device = select_device(cfg["device"])
