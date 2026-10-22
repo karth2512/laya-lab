@@ -69,7 +69,9 @@ class JevArm(Arm):
         if not self._key:
             raise RuntimeError(f"set the {self.cfg['api_key_env']} environment variable")
         cache_file = Path(self.cfg["cache_file"])
-        self.cache = ResponseCache(cache_file if cache_file.is_absolute() else REPO_ROOT / cache_file)
+        self.cache = ResponseCache(
+            cache_file if cache_file.is_absolute() else REPO_ROOT / cache_file
+        )
         self.client = httpx.Client(
             transport=self.transport,
             timeout=self.cfg["timeout_s"],

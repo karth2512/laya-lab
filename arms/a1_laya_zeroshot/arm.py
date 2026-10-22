@@ -54,7 +54,11 @@ class LayaZeroShot(Arm):
 
     def _question(self, variant: str, reverse: bool = False) -> dict[str, Any]:
         v = self.variants[variant]
-        q: dict[str, Any] = {"type": "choice", "instructions": v["question"], "criteria": v["options"]}
+        q: dict[str, Any] = {
+            "type": "choice",
+            "instructions": v["question"],
+            "criteria": v["options"],
+        }
         if reverse:
             q["option_order"] = list(range(len(v["options"])))[::-1]
         return {QID: q}

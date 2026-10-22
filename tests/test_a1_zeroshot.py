@@ -11,9 +11,7 @@ import numpy as np
 import pytest
 
 from arms.a1_laya_zeroshot.arm import build, load_variants
-from tests.helpers import RecordingContext, check_arm, synthetic_split
-
-KEYWORDS = ["tumor", "liver", "brain", "heart", "syndrome"]
+from tests.helpers import _WORDS, RecordingContext, check_arm, synthetic_split
 
 
 class StubAgent:
@@ -24,14 +22,14 @@ class StubAgent:
 
     def predict_batch(self, states: list[str], questions: dict[str, Any], **kw: Any) -> list[Any]:
         self.calls.append(questions)
-        (qid, q), = questions.items()
+        ((qid, q),) = questions.items()
         options = list(q["criteria"])
         informative = q["instructions"].startswith("Which category")
         out = []
         for s in states:
             p = np.full(5, 0.2)
             if informative:
-                hits = np.array([s.count(w) for w in KEYWORDS], dtype=float) + 0.01
+                hits = np.array([sum(s.count(w) for w in ws) for ws in _WORDS], dtype=float)
                 p = hits / hits.sum()
             # Keys are labels, so the arm must map back to class-id order itself.
             probs = {o: round(float(v), 4) for o, v in zip(options, p, strict=True)}
